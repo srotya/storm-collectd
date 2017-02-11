@@ -181,6 +181,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 		}else{
 			values.setType("records");
 		}
+		values.setPlugin(bolt.get(idField).getAsString());
 		values.setTypeInstance(field);
 		values.setValues(Arrays.asList(bolt.get(field).getAsNumber()));
 		Collectd.dispatchValues(values);
