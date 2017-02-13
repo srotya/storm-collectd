@@ -139,7 +139,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	public void fetchTopologyMetrics(String url, String topologyId, ValueList values, HttpClientBuilder builder,
 			Gson gson) throws ClientProtocolException, IOException {
 		CloseableHttpClient client = builder.build();
-		HttpGet get = new HttpGet(url + "/api/v1/topology/" + topologyId);
+		HttpGet get = new HttpGet(url + "/api/v1/topology/" + topologyId + "?window=600");
 		CloseableHttpResponse result = client.execute(get, context);
 		if (result.getStatusLine().getStatusCode() == 200) {
 			String metrics = EntityUtils.toString(result.getEntity());
@@ -176,9 +176,9 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 
 	public void addDataSourceAndValue(JsonElement element, String idField, String field, ValueList values) {
 		JsonObject bolt = element.getAsJsonObject();
-		if(field.toLowerCase().contains("latency")) {
+		if (field.toLowerCase().contains("latency")) {
 			values.setType("latency");
-		}else{
+		} else {
 			values.setType("records");
 		}
 		values.setPlugin(bolt.get(idField).getAsString());
