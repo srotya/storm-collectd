@@ -120,7 +120,8 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 								fetchTopologyMetrics(nimbus, id, values, builder, gson);
 							}
 						} else {
-							Collectd.logError("Unable to fetch Storm metrics:" + response.getStatusLine());
+							Collectd.logError("Unable to fetch Storm metrics:" + response.getStatusLine() + "\t"
+									+ EntityUtils.toString(response.getEntity()));
 						}
 						client.close();
 					} catch (Exception e) {
@@ -169,7 +170,8 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 			if (result.getStatusLine().getStatusCode() == 401) {
 				Collectd.logError("Looks like supplied Kerberos account can't read topology metrics for:" + topologyId);
 			} else {
-				Collectd.logError("Failed to fetch topology metrics:" + result.getStatusLine());
+				Collectd.logError("Failed to fetch topology metrics:" + result.getStatusLine() + "\t"
+						+ EntityUtils.toString(result.getEntity()));
 			}
 		}
 	}
