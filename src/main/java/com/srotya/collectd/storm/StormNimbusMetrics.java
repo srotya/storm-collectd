@@ -73,6 +73,10 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	private static final String EXECUTE_LATENCY = "executeLatency";
 	private static final String PROCESS_LATENCY = "processLatency";
 	private static final String FAILED = "failed";
+	private static final String ACKED = "acked";
+	private static final String CAPACITY = "capacity";
+	private static final List<String> BOLT_PROPS = Arrays.asList(FAILED, PROCESS_LATENCY, EXECUTE_LATENCY, ACKED, CAPACITY);
+	private static final List<String> SPOUT_PROPS = Arrays.asList(FAILED, COMPLETE_LATENCY, ACKED, CAPACITY);
 	private static final String BOLT_ID = "boltId";
 	private static final String SPOUT_ID = "spoutId";
 	private List<String> nimbusAddresses;
@@ -148,7 +152,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 			if (topologyMetrics.has(SPOUTS)) {
 				JsonArray spouts = topologyMetrics.get(SPOUTS).getAsJsonArray();
 				for (JsonElement spoutElement : spouts) {
-					for (String field : Arrays.asList(FAILED, COMPLETE_LATENCY)) {
+					for (String field : SPOUT_PROPS) {
 						addDataSourceAndValue(spoutElement, SPOUT_ID, field, values);
 					}
 				}
@@ -159,7 +163,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 			if (topologyMetrics.has(BOLTS)) {
 				JsonArray bolts = topologyMetrics.get(BOLTS).getAsJsonArray();
 				for (JsonElement boltElement : bolts) {
-					for (String field : Arrays.asList(FAILED, PROCESS_LATENCY, EXECUTE_LATENCY)) {
+					for (String field : BOLT_PROPS) {
 						addDataSourceAndValue(boltElement, BOLT_ID, field, values);
 					}
 				}
