@@ -76,7 +76,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	private static final String ACKED = "acked";
 	private static final String CAPACITY = "capacity";
 	private static final List<String> BOLT_PROPS = Arrays.asList(FAILED, PROCESS_LATENCY, EXECUTE_LATENCY, ACKED, CAPACITY);
-	private static final List<String> SPOUT_PROPS = Arrays.asList(FAILED, COMPLETE_LATENCY, ACKED, CAPACITY);
+	private static final List<String> SPOUT_PROPS = Arrays.asList(FAILED, COMPLETE_LATENCY, ACKED);
 	private static final String BOLT_ID = "boltId";
 	private static final String SPOUT_ID = "spoutId";
 	private List<String> nimbusAddresses;
@@ -129,6 +129,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 						}
 						client.close();
 					} catch (Exception e) {
+						e.printStackTrace();
 						Collectd.logError(
 								"Failed to fetch metrics from Nimbus:" + nimbus + "\treason:" + e.getMessage());
 						e.printStackTrace();
