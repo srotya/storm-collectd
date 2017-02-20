@@ -191,6 +191,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 		values.setPlugin(bolt.get(idField).getAsString());
 		values.setTypeInstance(field);
 		values.setValues(Arrays.asList(bolt.get(field).getAsNumber()));
+		Collectd.logDebug("Dispatching data:" + values);
 		Collectd.dispatchValues(values);
 	}
 
@@ -283,7 +284,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 			LoginContext ctx = new LoginContext("KrbLogin");
 			ctx.login();
 			subject = ctx.getSubject();
-			System.out.println("Logged in");
+			Collectd.logDebug("Logged in");
 		} catch (LoginException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
