@@ -75,7 +75,8 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	private static final String FAILED = "failed";
 	private static final String ACKED = "acked";
 	private static final String CAPACITY = "capacity";
-	private static final List<String> BOLT_PROPS = Arrays.asList(FAILED, PROCESS_LATENCY, EXECUTE_LATENCY, ACKED, CAPACITY);
+	private static final List<String> BOLT_PROPS = Arrays.asList(FAILED, PROCESS_LATENCY, EXECUTE_LATENCY, ACKED,
+			CAPACITY);
 	private static final List<String> SPOUT_PROPS = Arrays.asList(FAILED, COMPLETE_LATENCY, ACKED);
 	private static final String BOLT_ID = "boltId";
 	private static final String SPOUT_ID = "spoutId";
@@ -94,11 +95,34 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	@Override
 	public int read() {
 		Gson gson = new Gson();
-		Subject.doAs(subject, new PrivilegedAction<Void>() {
+		for (String nimbus : nimbusAddresses) {
+			Subject.doAs(subject, new PrivilegedAction<Void>() {
 
-			@Override
-			public Void run() {
-				for (String nimbus : nimbusAddresses) {
+				@Override
+				public Void run() {
+					HttpGet request = new HttpGet(nimbus + "/api/v1/topology/summary");
+					CloseableHttpClient client = builder.build();
+					HttpResponse response = null;
+					try {
+						response = client.execute(request, context);
+						if (response.getStatusLine().getStatusCode() == 401) {
+							login();
+						}
+					} catch (IOException e1) {
+						try {
+							Collectd.logError("Unable to fetch Storm metrics:" + e1.getMessage());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					return null;
+				}
+			});
+
+			Subject.doAs(subject, new PrivilegedAction<Void>() {
+
+				@Override
+				public Void run() {
 					HttpGet request = new HttpGet(nimbus + "/api/v1/topology/summary");
 					CloseableHttpClient client = builder.build();
 					try {
@@ -132,13 +156,11 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 						e.printStackTrace();
 						Collectd.logError(
 								"Failed to fetch metrics from Nimbus:" + nimbus + "\treason:" + e.getMessage());
-						e.printStackTrace();
-						continue;
 					}
+					return null;
 				}
-				return null;
-			}
-		});
+			});
+		}
 		return 0;
 	}
 
@@ -242,15 +264,7 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 			System.setProperty("java.security.krb5.conf", "/etc/krb5.conf");
 			System.setProperty("javax.security.auth.useSubjectCredsOnly", "true");
 
-			try {
-				LoginContext ctx = new LoginContext("KrbLogin");
-				ctx.login();
-				subject = ctx.getSubject();
-				System.out.println("Logged in");
-			} catch (LoginException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			login();
 
 			Lookup<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
 					.register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory(true)).build();
@@ -284,6 +298,18 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	@Override
 	public int shutdown() {
 		return 0;
+	}
+
+	public void login() {
+		try {
+			LoginContext ctx = new LoginContext("KrbLogin");
+			ctx.login();
+			subject = ctx.getSubject();
+			System.out.println("Logged in");
+		} catch (LoginException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
