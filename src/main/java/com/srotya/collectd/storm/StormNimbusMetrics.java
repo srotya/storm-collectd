@@ -95,30 +95,8 @@ public class StormNimbusMetrics implements CollectdConfigInterface, CollectdRead
 	@Override
 	public int read() {
 		Gson gson = new Gson();
+		login();
 		for (String nimbus : nimbusAddresses) {
-			Subject.doAs(subject, new PrivilegedAction<Void>() {
-
-				@Override
-				public Void run() {
-					HttpGet request = new HttpGet(nimbus + "/api/v1/topology/summary");
-					CloseableHttpClient client = builder.build();
-					HttpResponse response = null;
-					try {
-						response = client.execute(request, context);
-						if (response.getStatusLine().getStatusCode() == 401) {
-							login();
-						}
-					} catch (IOException e1) {
-						try {
-							Collectd.logError("Unable to fetch Storm metrics:" + e1.getMessage());
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					return null;
-				}
-			});
-
 			Subject.doAs(subject, new PrivilegedAction<Void>() {
 
 				@Override
